@@ -12,7 +12,7 @@ process.GlobalTag.globaltag = "80X_dataRun2_Prompt_ICHEP16JEC_v0"
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
        #'/store/relval/CMSSW_8_1_0_pre9/RelValSingleElectronPt35Extended/GEN-SIM-RECO/PU25ns_81X_mcRun2_asymptotic_v2_2023tiltedPU35-v1/10000/FA5F7E7E-7055-E611-8095-0025905B856E.root'
-       'file:RelValTTbar_UPG_PU35.root'
+       'file:/afs/cern.ch/user/d/drankin/public/MumbaiUPG/RelValTTbar_UPG_PU35.root'
     )
 )
 
