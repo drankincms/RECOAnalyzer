@@ -216,6 +216,7 @@ RECOAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         if (e.ecalEnergy()==0) Ooemoop = 999.;
         else if (!std::isfinite(e.ecalEnergy())) Ooemoop = 998.;
         else Ooemoop = (1.0/e.ecalEnergy() - e.eSuperClusterOverP()/e.ecalEnergy());
+	//--- ID criteria taken from https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
         if (fabs(e.superCluster()->eta())<1.4442) {
             if (e.full5x5_sigmaIetaIeta() >= 0.0103) {
                 fail = true;
