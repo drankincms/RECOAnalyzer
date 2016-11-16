@@ -140,6 +140,7 @@ void distplot(string filename, string name, string save, string xlabel, string s
 	TH1F *hist1 = (TH1F*)file1->Get(Form("check/%s%s",name.c_str(),suff.c_str()));
 
 	hist1->SetName("hist1");
+	hist1->SetTitle("");
 
 	hist1->Sumw2();
 	hist1->Rebin(rebin);
