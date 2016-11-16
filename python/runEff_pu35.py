@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("Demo")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 10
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
@@ -76,13 +76,11 @@ process.check = cms.EDAnalyzer("RECOAnalyzer",
     vertices = cms.InputTag("offlinePrimaryVertices"),
     #jets = cms.InputTag("ak4PFchsCorrectedJets"),
     jets = cms.InputTag("ak4PFJetsCHS"),
-    btags = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
-    flavorinfo = cms.InputTag("ak4JetFlavourInfos"),
+    met = cms.InputTag("pfMet"),
     genparticles = cms.InputTag("genParticles"),
     electrons = cms.InputTag("gedGsfElectrons"),
     beamspot = cms.InputTag("offlineBeamSpot"),
     conversions = cms.InputTag("particleFlowEGamma"),
-    muons = cms.InputTag("muons"),
     debug = cms.bool(False)
 )
 
@@ -91,5 +89,5 @@ process.TFileService = cms.Service("TFileService",
     closeFileFast = cms.untracked.bool(True)
 )
 
-#process.p = cms.Path(process.ak4PFCHSL1FastL2L3CorrectorChain + process.ak4PFchsCorrectedJets + process.selectedHadronsAndPartons + process.ak4JetFlavourInfos + process.check)
-process.p = cms.Path(process.selectedHadronsAndPartons + process.ak4JetFlavourInfos + process.check)
+#process.p = cms.Path(process.ak4PFCHSL1FastL2L3CorrectorChain + process.ak4PFchsCorrectedJets + process.check)
+process.p = cms.Path(process.check)
