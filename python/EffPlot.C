@@ -209,5 +209,5 @@ void EffPlot()
 
         distplot("histo_ttbar", "jtpt", "ttbar", "jet p_{T}","",0.,1000.);
         distplot("histo_ttbar", "jteta", "ttbar", "jet #eta","",-5.,5.);
-        distplot("histo_ttbar", "mtpt", "ttbar", "met","",0.,1000.);
+        distplot("histo_ttbar", "mtpt", "ttbar", "MET","",0.,1000.);
 }
