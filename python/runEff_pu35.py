@@ -76,8 +76,7 @@ process.check = cms.EDAnalyzer("RECOAnalyzer",
     vertices = cms.InputTag("offlinePrimaryVertices"),
     #jets = cms.InputTag("ak4PFchsCorrectedJets"),
     jets = cms.InputTag("ak4PFJetsCHS"),
-    btags = cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
-    flavorinfo = cms.InputTag("ak4JetFlavourInfos"),
+    met = cms.InputTag("pfMet"),
     genparticles = cms.InputTag("genParticles"),
     electrons = cms.InputTag("gedGsfElectrons"),
     beamspot = cms.InputTag("offlineBeamSpot"),
@@ -90,5 +89,5 @@ process.TFileService = cms.Service("TFileService",
     closeFileFast = cms.untracked.bool(True)
 )
 
-#process.p = cms.Path(process.ak4PFCHSL1FastL2L3CorrectorChain + process.ak4PFchsCorrectedJets + process.selectedHadronsAndPartons + process.ak4JetFlavourInfos + process.check)
-process.p = cms.Path(process.selectedHadronsAndPartons + process.ak4JetFlavourInfos + process.check)
+#process.p = cms.Path(process.ak4PFCHSL1FastL2L3CorrectorChain + process.ak4PFchsCorrectedJets + process.check)
+process.p = cms.Path(process.check)

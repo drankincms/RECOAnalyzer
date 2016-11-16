@@ -42,6 +42,8 @@
 #include "SimDataFormats/JetMatching/interface/JetFlavour.h"
 #include "SimDataFormats/JetMatching/interface/JetFlavourInfoMatching.h"
 
+#include "DataFormats/METReco/interface/PFMET.h"
+
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -68,8 +70,7 @@ class RECOAnalyzer : public edm::EDAnalyzer {
       edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
       edm::EDGetTokenT<std::vector<reco::GenParticle>> genToken_;
       edm::EDGetTokenT<std::vector<reco::PFJet>> jetToken_;
-      edm::EDGetTokenT<reco::JetTagCollection> bToken_;
-      edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> flavToken_;
+      edm::EDGetTokenT<std::vector<reco::PFMET>> mToken_;
       edm::EDGetTokenT<std::vector<reco::GsfElectron>> elToken_;
       edm::EDGetTokenT<reco::BeamSpot> bsToken_;
       edm::EDGetTokenT<std::vector<reco::Conversion>> convToken_;
@@ -78,17 +79,16 @@ class RECOAnalyzer : public edm::EDAnalyzer {
  */
 
       TH1F *nvtx;
-      TH1F *elnum, *elden, *btnum, *btden;
-      TH1F *elnum3, *elden3, *btnum3, *btden3;
-      TH1F *mtnum, *mtden, *mtnum3, *mtden3;
+      TH1F *elnum, *elden;
+      TH1F *elnum3, *elden3;
 
       TH2F *elcutflow;
-      TH1F *eletanum, *eletaden, *btetanum, *btetaden;
-      TH1F *eletanum3, *eletaden3, *btetanum3, *btetaden3;
-      TH1F *mtetanum, *mtetaden, *mtetanum3, *mtetaden3;
+      TH1F *eletanum, *eletaden;
+      TH1F *eletanum3, *eletaden3;
       TH2F *eletacutflow;
       TH2F *eldist;
-      TH2F *btdist, *mtdist;
+      TH2F *jtdist, *mtdist;
+      TH1F *jtpt, *jteta, *mtpt;
 
 /*
  * These are the histograms that we will fill in the analyzer.
@@ -111,8 +111,7 @@ RECOAnalyzer::RECOAnalyzer(const edm::ParameterSet& iConfig):
     vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
     genToken_(consumes<std::vector<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("genparticles"))),
     jetToken_(consumes<std::vector<reco::PFJet>>(iConfig.getParameter<edm::InputTag>("jets"))),
-    bToken_(consumes<reco::JetTagCollection>(iConfig.getParameter<edm::InputTag>("btags"))),
-    flavToken_(consumes<reco::JetFlavourInfoMatchingCollection>(iConfig.getParameter<edm::InputTag>("flavorinfo"))),
+    mToken_(consumes<std::vector<reco::PFMET>>(iConfig.getParameter<edm::InputTag>("met"))),
     elToken_(consumes<std::vector<reco::GsfElectron>>(iConfig.getParameter<edm::InputTag>("electrons"))),
     bsToken_(consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamspot"))),
     convToken_(consumes<std::vector<reco::Conversion>>(iConfig.getParameter<edm::InputTag>("conversions"))),
@@ -140,31 +139,18 @@ RECOAnalyzer::RECOAnalyzer(const edm::ParameterSet& iConfig):
 /*
  * The "3" suffix here is meant to indicate the genParticle status code used to define the efficiencies
  */
-    btnum     = fs->make<TH1F>( "btnum", "btnum" , 100, 0, 1000);
-    btden     = fs->make<TH1F>( "btden", "btden" , 100, 0, 1000);
-    btnum3     = fs->make<TH1F>( "btnum3", "btnum3" , 100, 0, 1000);
-    btden3     = fs->make<TH1F>( "btden3", "btden3" , 100, 0, 1000);
-    mtnum     = fs->make<TH1F>( "mtnum", "mtnum" , 100, 0, 1000);
-    mtden     = fs->make<TH1F>( "mtden", "mtden" , 100, 0, 1000);
-    mtnum3     = fs->make<TH1F>( "mtnum3", "mtnum3" , 100, 0, 1000);
-    mtden3     = fs->make<TH1F>( "mtden3", "mtden3" , 100, 0, 1000);
     eletanum     = fs->make<TH1F>( "eletanum", "eletanum" , 60, -3, 3);
     eletaden     = fs->make<TH1F>( "eletaden", "eletaden" , 60, -3, 3);
     eletanum3     = fs->make<TH1F>( "eletanum3", "eletanum3" , 60, -3, 3);
     eletaden3     = fs->make<TH1F>( "eletaden3", "eletaden3" , 60, -3, 3);
-    btetanum     = fs->make<TH1F>( "btetanum", "btetanum" , 60, -3, 3);
-    btetaden     = fs->make<TH1F>( "btetaden", "btetaden" , 60, -3, 3);
-    btetanum3     = fs->make<TH1F>( "btetanum3", "btetanum3" , 60, -3, 3);
-    btetaden3     = fs->make<TH1F>( "btetaden3", "btetaden3" , 60, -3, 3);
-    mtetanum     = fs->make<TH1F>( "mtetanum", "mtetanum" , 60, -3, 3);
-    mtetaden     = fs->make<TH1F>( "mtetaden", "mtetaden" , 60, -3, 3);
-    mtetanum3     = fs->make<TH1F>( "mtetanum3", "mtetanum3" , 60, -3, 3);
-    mtetaden3     = fs->make<TH1F>( "mtetaden3", "mtetaden3" , 60, -3, 3);
     elcutflow = fs->make<TH2F>( "elcutflow", "elcutflow", 50, 0., 500., 10, 0.5, 10.5);
     eletacutflow = fs->make<TH2F>( "eletacutflow", "eletacutflow", 60, -3., 3., 10, 0.5, 10.5);
     eldist = fs->make<TH2F>( "eldist", "eldist", 50, 0., 500., 60, -3., 3.);
-    btdist = fs->make<TH2F>( "btdist", "btdist", 50, 0., 500., 60, -3., 3.);
-    mtdist = fs->make<TH2F>( "mtdist", "mtdist", 50, 0., 500., 60, -3., 3.);
+    jtdist = fs->make<TH2F>( "jtdist", "jtdist", 50, 0., 2000., 60, -3., 3.);
+    jtpt = fs->make<TH1F>(  "jtpt", "jtpt", 50, 0., 2000.);
+    jteta = fs->make<TH1F>(  "jteta", "jteta", 60, 5., -5.);
+    mtdist = fs->make<TH2F>( "mtdist", "mtdist", 50, 0., 1000., 60, -3., 3.);
+    mtpt = fs->make<TH1F>(  "mtpt", "mtpt", 50, 0., 1000.);
 }
 
 RECOAnalyzer::~RECOAnalyzer()
@@ -184,114 +170,29 @@ RECOAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     edm::Handle<reco::VertexCollection> vertices;
     iEvent.getByToken(vtxToken_, vertices);
-    if (vertices->empty()) return; // skip the event if no PV found
-    nvtx->Fill(vertices->size());
-    Point PVtx = vertices->at(0).position();
-
-    edm::Handle<reco::JetTagCollection> bTagHandle;
-    iEvent.getByToken(bToken_, bTagHandle);
-    const reco::JetTagCollection & bTags = *(bTagHandle.product());
 /*
  * This is the standard way to get the collection you are interested in from the input file.
  */
 
-    FlavourMap flavours;
-    //Get flavour matching collection
-    edm::Handle<reco::JetFlavourInfoMatchingCollection> jetMC;
-    iEvent.getByToken(flavToken_, jetMC);
-    for (reco::JetFlavourInfoMatchingCollection::const_iterator iter = jetMC->begin(); iter != jetMC->end(); iter++) {
-        unsigned int fl = std::abs(iter->second.getHadronFlavour());
-        flavours.insert(FlavourMap::value_type(iter->first, fl));
-    }
+    if (vertices->empty()) return; // skip the event if no PV found
+    nvtx->Fill(vertices->size());
+    Point PVtx = vertices->at(0).position();
 
     edm::Handle<std::vector<reco::PFJet>> jets;
     iEvent.getByToken(jetToken_, jets);
     for (const reco::PFJet &j : *jets) {
-        if (j.pt() < 25) continue;
-        bool match = false;
-        double bdisc = -1.;
-        int jflav = 0;
-        tmpvec.SetPtEtaPhiE(j.pt(), j.eta(), j.phi(), j.energy());
-        for (unsigned int i = 0; i != bTags.size(); ++i) {
-            TLorentzVector tmpvec1;
-            tmpvec1.SetPtEtaPhiE(bTags[i].first->pt(),bTags[i].first->eta(),bTags[i].first->phi(),bTags[i].first->energy());
-            if (tmpvec.DeltaR(tmpvec1)<0.3 && fabs((tmpvec.Pt()-tmpvec1.Pt())/tmpvec.Pt()) < 0.5 ) { //this is the matching criteria (dR<0.3 and dpT/pT<0.5)
-                 match = true;
-                 bdisc = bTags[i].second;
-                 edm::RefToBase<reco::Jet> aJet = bTags[i].first;
-                 if (flavours.find (aJet) == flavours.end()) {
-                 } else {
-                   jflav = flavours[aJet];
-                 }
-                 break;
-            }
-        }
-        if (match && abs(jflav)==5) { //if properly matched and the mcTruth flavour is a b-jet
-            btden->Fill(j.pt());
-            btetaden->Fill(j.eta());
-            if (bdisc>0.460) { //current (2016) loose operating point
-                btnum->Fill(j.pt());
-                btetanum->Fill(j.eta());
-            }
-        }
-        if (match && (abs(jflav)==21 or abs(jflav)<4)) {// if properly matched and mcTruth flavour is not b/c (udsg)
-            mtden->Fill(j.pt());
-            mtetaden->Fill(j.eta());
-            if (bdisc>0.460) {
-                mtnum->Fill(j.pt());
-                mtetanum->Fill(j.eta());
-            }
-        }
+        if (j.pt() < 10) continue;
+        jtpt->Fill(j.pt());
+        jteta->Fill(j.eta());
+        jtdist->Fill(j.pt(),j.eta());
     }
 
-    edm::Handle<std::vector<reco::GenParticle>> genparts;
-    iEvent.getByToken(genToken_, genparts);
-    for (unsigned int i = 0; i != bTags.size(); ++i) {
-        if (bTags[i].first->pt() < 25) continue;
-        bool match = false;
-        double bdisc = -1;
-        TLorentzVector tmpvec, tmpvec1;
-        tmpvec.SetPtEtaPhiE(bTags[i].first->pt(),bTags[i].first->eta(),bTags[i].first->phi(),bTags[i].first->energy());
-        for (const reco::GenParticle &g : *genparts) {
-            if (g.pt() < 20 or g.status()!=3 or abs(g.pdgId())!=5) continue;
-            tmpvec1.SetPtEtaPhiE(g.pt(),g.eta(),g.phi(),g.energy());
-            //if (tmpvec.DeltaR(tmpvec1)<0.3 && fabs((tmpvec.Pt()-tmpvec1.Pt())/tmpvec.Pt()) < 0.5 ) {
-            if (tmpvec.DeltaR(tmpvec1)<0.3) {// no dpT/pT requirement
-                 match = true;
-                 bdisc = bTags[i].second;
-                 break;
-            }
-        }
-        if (match) {
-            btden3->Fill(tmpvec1.Pt());
-            btetaden3->Fill(tmpvec1.Eta());
-            btdist->Fill(tmpvec1.Pt(),tmpvec1.Eta());
-            if (bdisc>0.460) {
-                btnum3->Fill(tmpvec1.Pt());
-                btetanum3->Fill(tmpvec1.Eta());
-            }
-        }
-        match = false;
-        for (const reco::GenParticle &g : *genparts) {
-            if (g.pt() < 20 or g.status()!=3 or (abs(g.pdgId())>3 and abs(g.pdgId())<=5) ) continue; //only udsg for mistag
-            tmpvec1.SetPtEtaPhiE(g.pt(),g.eta(),g.phi(),g.energy());
-            //if (tmpvec.DeltaR(tmpvec1)<0.3 && fabs((tmpvec.Pt()-tmpvec1.Pt())/tmpvec.Pt()) < 0.5 ) {
-            if (tmpvec.DeltaR(tmpvec1)<0.3) {
-                 match = true;
-                 bdisc = bTags[i].second;
-                 break;
-            }
-        }
-        if (match) {
-            mtden3->Fill(tmpvec1.Pt());
-            mtden3->Fill(tmpvec1.Eta());
-            mtdist->Fill(tmpvec1.Pt(),tmpvec1.Eta());
-            if (bdisc>0.460) {
-                mtnum3->Fill(tmpvec1.Pt());
-                mtetanum3->Fill(tmpvec1.Eta());
-            }
-        }
-    }
+    edm::Handle<std::vector<reco::PFMET>> hMet;
+    iEvent.getByToken(mToken_, hMet);
+    mtpt->Fill(hMet->at(0).pt());
+    mtdist->Fill(hMet->at(0).pt(),hMet->at(0).phi());
+
+    //std::cout<<"MET = "<<hMet->at(0).pt()<<std::endl;
 
     edm::Handle<reco::ConversionCollection> conversions;
     iEvent.getByToken(convToken_, conversions);
@@ -449,6 +350,9 @@ RECOAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         retv.push_back(tmpvec);
     }
 
+    edm::Handle<std::vector<reco::GenParticle>> genparts;
+    iEvent.getByToken(genToken_, genparts);
+
     for (const reco::GenParticle &g : *genparts) {
         //std::cout<<"\nGenPart ID"<<g.pdgId()<<" Stat"<<g.status()<<" Pt"<<g.pt();
         if (g.pt() < 10 or g.status()!=1) continue;
@@ -461,7 +365,7 @@ RECOAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             eletaden->Fill(g.eta());
             eldist->Fill(g.pt(),g.eta());
             for (unsigned int i=0; i<rev.size(); i++) {
-                if (tmpvec.DeltaR(rev[i])<0.3 && fabs((g.pt()-rev[i].Pt())/g.pt()) < 0.5 ) {
+                if (tmpvec.DeltaR(rev[i])<0.3 && fabs((g.pt()-rev[i].Pt())/g.pt()) < 0.5 ) {//this is the matching criteria (dR<0.3 and dpT/pT<0.5)
                     match=true;
                     break;
                 }
