@@ -12,5 +12,6 @@
 <use name="RecoEgamma/EgammaTools"/>
 <use name="DataFormats/BTauReco"/> 
 <use name="DataFormats/JetReco"/>
+<use name="DataFormats/METReco"/>
 <use name="SimDataFormats/JetMatching"/>
 <flags EDM_PLUGIN="1"/>
