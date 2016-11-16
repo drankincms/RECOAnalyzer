@@ -132,20 +132,87 @@ void effplot(string filename, string name, string save, string xlabel, string su
 	cst->SaveAs(Form("%sEff_%s.pdf",name.c_str(),save.c_str()));
 }
 
+void distplot(string filename, string name, string save, string xlabel, string suff = "", float xlow = 0., float xhigh = 200., int rebin = 2, float bottom = 0., float top = 1.3) {
+
+	gROOT->ForceStyle();
+
+	TFile *file1 = new TFile(Form("%s_pu35.root",filename.c_str()));
+	TH1F *hist1 = (TH1F*)file1->Get(Form("check/%sden%s",name.c_str(),suff.c_str()));
+
+	hist1->SetName("hist1");
+
+	hist1->Sumw2();
+	hist1->Rebin(rebin);
+
+	hist1->SetLineColor(1);
+	hist1->SetLineWidth(2);
+
+	TFile *file2 = new TFile(Form("%s_pu140.root",filename.c_str()));
+	TH1F *hist2 = (TH1F*)file2->Get(Form("check/%sden%s",name.c_str(),suff.c_str()));
+
+	hist2->SetName("hist2");
+
+	hist2->Sumw2();
+	hist2->Rebin(rebin);
+
+	hist2->SetLineColor(2);
+	hist2->SetLineWidth(2);
+
+	TFile *file3 = new TFile(Form("%s_pu200.root",filename.c_str()));
+	TH1F *hist3 = (TH1F*)file3->Get(Form("check/%sden%s",name.c_str(),suff.c_str()));
+
+	hist3->SetName("hist3");
+
+	hist3->Sumw2();
+	hist3->Rebin(rebin);
+
+	hist3->SetLineColor(4);
+	hist3->SetLineWidth(2);
+
+	TCanvas *cst = new TCanvas("cst","cst",10,10,700,700);
+	gStyle->SetOptStat(0);
+
+	hist1->GetYaxis()->SetTitle("Efficiency");
+	hist1->GetXaxis()->SetTitle(xlabel.c_str());
+	hist1->GetXaxis()->SetRangeUser(xlow,xhigh);
+	hist1->SetMaximum(top);
+	hist1->SetMinimum(bottom);
+	double hmax = hist3->GetMaximum();
+	if (hmax==0) return;
+	hist1->Scale(0.5/hmax);
+	hist2->Scale(0.5/hmax);
+	hist3->Scale(0.5/hmax);
+	hist1->Draw("hist");
+	hist2->Draw("hist same");
+	hist3->Draw("hist same");
+
+	cst->Update();
+	TGaxis *axis = new TGaxis(gPad->GetUxmax(),gPad->GetUymin(),
+	    gPad->GetUxmax(),gPad->GetUymax(),bottom,2.*hmax*top,510,"+L");
+	axis->SetLineColor(kBlue);
+	axis->SetTextColor(kBlue);
+	axis->Draw();
+	
+	TLegend *leg = new TLegend(0.1,0.75,0.9,0.9);
+	leg->SetNColumns(3);
+	TLegendEntry *entry4 = leg->AddEntry("hist1","PU35 - Distribution","l");
+	TLegendEntry *entry5 = leg->AddEntry("hist2","PU140 - Distribution","l");
+	TLegendEntry *entry6 = leg->AddEntry("hist3","PU200 - Distribution","l");
+	leg->Draw();
+
+	cst->SaveAs(Form("%sDist_%s.png",name.c_str(),save.c_str()));
+	cst->SaveAs(Form("%sDist_%s.pdf",name.c_str(),save.c_str()));
+}
 
 void EffPlot()
 {
         effplot("histo_ttbar", "el", "ttbar", "gen e p_{T}","",0.,250.);
-        effplot("histo_ttbar", "bt", "ttbar", "b jet p_{T}","",0.,500.);
-        effplot("histo_ttbar", "mt", "ttbar", "guds jet p_{T}","",0.,500.);
         effplot("histo_ttbar", "el", "gen_ttbar", "gen e p_{T}","3",0.,250.);
-        effplot("histo_ttbar", "bt", "gen_ttbar", "b quark p_{T}","3",0.,500.);
-        effplot("histo_ttbar", "mt", "gen_ttbar", "light quark p_{T}","3",0.,500.);
 
         effplot("histo_ttbar", "eleta", "ttbar", "gen e #eta","",-3.,3.,4);
-        effplot("histo_ttbar", "bteta", "ttbar", "b jet #eta","",-3.,3.);
-        effplot("histo_ttbar", "mteta", "ttbar", "guds jet #eta","",-3.,3.);
         effplot("histo_ttbar", "eleta", "gen_ttbar", "gen e #eta","3",-3.,3.,4);
-        effplot("histo_ttbar", "bteta", "gen_ttbar", "b quark #eta","3",-3.,3.);
-        effplot("histo_ttbar", "mteta", "gen_ttbar", "light quark #eta","3",-3.,3.);
+
+        //distplot("histo_ttbar", "jtpt", "ttbar", "jet p_{T}","",0.,2000.);
+        //distplot("histo_ttbar", "jteta", "ttbar", "jet #eta","",-5.,5.);
+        //distplot("histo_ttbar", "mtpt", "ttbar", "met","",0.,1000.);
 }

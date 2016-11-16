@@ -148,7 +148,7 @@ RECOAnalyzer::RECOAnalyzer(const edm::ParameterSet& iConfig):
     eldist = fs->make<TH2F>( "eldist", "eldist", 50, 0., 500., 60, -3., 3.);
     jtdist = fs->make<TH2F>( "jtdist", "jtdist", 50, 0., 2000., 60, -3., 3.);
     jtpt = fs->make<TH1F>(  "jtpt", "jtpt", 50, 0., 2000.);
-    jteta = fs->make<TH1F>(  "jteta", "jteta", 60, 5., -5.);
+    jteta = fs->make<TH1F>(  "jteta", "jteta", 60, -5., 5.);
     mtdist = fs->make<TH2F>( "mtdist", "mtdist", 50, 0., 1000., 60, -3., 3.);
     mtpt = fs->make<TH1F>(  "mtpt", "mtpt", 50, 0., 1000.);
 }
